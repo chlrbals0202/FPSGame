@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class NewMonoBehaviourScript : MonoBehaviour
+public class PlayerRotate : MonoBehaviour
 {
     public float rotSpeed = 200;
 

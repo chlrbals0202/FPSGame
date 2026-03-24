@@ -8,7 +8,9 @@ public class CamRotate : MonoBehaviour
     //회전 값 변수
     float mx = 0;
     float my = 0;
-
+    /// <summary>
+    /// /
+    /// </summary>
     // Update is called once per frame
     void Update()
     {
