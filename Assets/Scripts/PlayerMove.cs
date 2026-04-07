@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using UnityEngine.UI;
 public class PlayerMove : MonoBehaviour
 {
     //이동 속도 변수
@@ -23,6 +23,11 @@ public class PlayerMove : MonoBehaviour
     //체력 변수
     public int hp = 20;
 
+    //최대 체력 변수
+    int maxHp = 20;
+
+    //hp 슬라이더 변수
+    public Slider hpSlider;
 
     private void Start()
     {
@@ -76,5 +81,8 @@ public class PlayerMove : MonoBehaviour
     {
         //에너미의 공격력만큼 플레이어의 체력을 깎는다
         hp -= damage;
+
+        //현재 플레이어의 hp(%)를 hp 슬라이더의 value에 반영
+        hpSlider.value = (float)hp / (float)maxHp;
     }
 }

@@ -1,4 +1,6 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class EnemyFSM : MonoBehaviour
 {
@@ -43,6 +45,12 @@ public class EnemyFSM : MonoBehaviour
     //에너미의 체력
     public int hp = 15;
 
+    //에너미의 최대 체력
+    int maxHp = 15;
+
+    //에너미 hp slider 변수
+    public Slider hpSlider;
+
     //초기 위치 저장용 변수
     Vector3 originPos;
 
@@ -84,12 +92,15 @@ public class EnemyFSM : MonoBehaviour
                 Return();
                 break;
             case EnemyState.Damaged:
-                Damaged();
+                //Damaged();
                 break;
             case EnemyState.Die:
-                Die();
+                //Die();
                 break;
         }
+
+        //현재 hp(%)를 hp 슬라이더의 value에 반영
+        hpSlider.value = (float)hp / (float)maxHp;
     }
 
     void Idle()
@@ -175,13 +186,66 @@ public class EnemyFSM : MonoBehaviour
         }
     }
 
-    void Damaged()
+    public void HitEnemy(int hitPower)
     {
+        //만일, 이미 피격 상태이거나 사망 상태 또는 복귀 상태라면 아무런 처리도 하지 않고 함수 종료
+        if (m_State == EnemyState.Damaged || m_State == EnemyState.Die || m_State == EnemyState.Return)
+        {
+            return;
+        }
 
+        //플레이어의 공격력만큼 에너미의 체력을 감소
+        hp -= hitPower;
+        
+        //에너미의 체력이 0보다 크면 피격 상태로 전환
+        if (hp > 0)
+        {
+            m_State = EnemyState.Damaged;
+            print("상태 전환: Any state -> Damaged");
+            Damaged();
+        }
+        //그렇지 않다면 죽음 상태로 전환
+        else
+        {
+            m_State = EnemyState.Die;
+            print("상태 전환: Any state -> Die");
+            Die();
+        }
     }
 
+    void Damaged()
+    {
+        //피격 상태를 처리하기 위한 코루틴 실행
+        StartCoroutine(DamageProcess());
+    }
+
+    //데미지 처리용 코루틴 함수
+    IEnumerator DamageProcess()
+    {
+        //피격 모션 시간만큼 기다린다
+        yield return new WaitForSeconds(0.5f);
+
+        //현재 상태를 이동 상태로 전환
+        m_State = EnemyState.Move;
+        print("상태 전환: Damaged -> Move");
+    }
     void Die()
     {
+        //진행 중인 피격 코루틴 중지
+        StopAllCoroutines();
 
+        //죽음 상태를 처리하기 위한 코루틴 실행
+        StartCoroutine(DieProcess());
+    }
+
+    IEnumerator DieProcess()
+    {
+        //캐릭터 콘트롤러 컴포넌트 비활성화
+        cc.enabled = false;
+
+        //2초 동안 기다린 후에 자기자신을 제거
+        yield return new WaitForSeconds(2f);
+        print("소멸!");
+        Destroy(gameObject);
     }
 }
