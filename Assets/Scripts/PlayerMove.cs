@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 public class PlayerMove : MonoBehaviour
 {
     //이동 속도 변수
@@ -29,6 +30,9 @@ public class PlayerMove : MonoBehaviour
     //hp 슬라이더 변수
     public Slider hpSlider;
 
+    //Hit 효과 오브젝트 
+    public GameObject hitEffect;
+
     private void Start()
     {
         cc = GetComponent<CharacterController>();
@@ -37,6 +41,12 @@ public class PlayerMove : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // 게임 상태가 '게임 중' 상태일 때만 조작할 수 있게 한다.
+        if (GameManager.gm.gState != GameManager.GameState.Run)
+        {
+            return;
+        }
+
         //WASD 키를 누르고 입력하면 캐릭터를 그 방향으로 이동
         //spacebar 키를 누르면 캐릭터가 수직으로 점프
 
@@ -84,5 +94,22 @@ public class PlayerMove : MonoBehaviour
 
         //현재 플레이어의 hp(%)를 hp 슬라이더의 value에 반영
         hpSlider.value = (float)hp / (float)maxHp;
+        //만일, 플레이어의 체력이 0보다 크면 피격 효과를 출력
+        if (hp > 0)
+        {
+            //피격 이펙트 코루틴 시작
+            StartCoroutine(PlayHitEffect());
+        }
+    }
+
+    //피격 효과 코루틴 함수
+    IEnumerator PlayHitEffect()
+    {
+        //1. 피격 UI 활성화
+        hitEffect.SetActive(true);
+        //2. 0.3초간 대기
+        yield return new WaitForSeconds(0.3f);
+        //3. 피격 UI 비활성화
+        hitEffect.SetActive(false);
     }
 }
