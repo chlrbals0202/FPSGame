@@ -1,9 +1,11 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using TMPro;
+
 public class GameManager : MonoBehaviour
 {
-    //½Ì±ÛÅÏ º¯¼ö
+    //ì‹±ê¸€í†¤ ì¸ìŠ¤í„´ìŠ¤
     public static GameManager gm;
 
     private void Awake()
@@ -14,7 +16,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    //°ÔÀÓ »óÅÂ »ó¼ö
+    //ê²Œì„ ìƒíƒœ ì—´ê±°
     public enum GameState
     {
         Ready,
@@ -22,57 +24,53 @@ public class GameManager : MonoBehaviour
         GameOver
     }
 
-    // ÇöÀç °ÔÀÓ »óÅÂ º¯¼ö
+    //í˜„ì¬ ê²Œì„ ìƒíƒœ ë³€ìˆ˜
     public GameState gState;
 
-    // °ÔÀÓ »óÅÂ UI ¿ÀºêÁ§Æ® º¯¼ö
+    //ê²Œì„ ìƒíƒœ UI ì˜¤ë¸Œì íŠ¸ ì°¸ì¡°
     public GameObject gameLabel;
 
-    // °ÔÀÓ »óÅÂ UI ÅØ½ºÆ® ÄÄÆ÷³ÍÆ® º¯¼ö
-    Text gameText;
+    //ê²Œì„ ìƒíƒœ UI í…ìŠ¤íŠ¸ ì»´í¬ë„ŒíŠ¸ (ë ˆê±°ì‹œ Text)
+    TextMeshProUGUI gameText;
 
-    // PlayerMove Å¬·¡½º º¯¼ö
+    //PlayerMove í´ë˜ìŠ¤ ì°¸ì¡°
     PlayerMove player;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        // ÃÊ±â °ÔÀÓ »óÅÂ´Â ÁØºñ »óÅÂ·Î ¼³Á¤
+        //ì´ˆê¸° ê²Œì„ ìƒíƒœë¥¼ ì¤€ë¹„ ìƒíƒœë¡œ ì„¤ì •
         gState = GameState.Ready;
 
-        // °ÔÀÓ »óÅÂ UI ¿ÀºêÁ§Æ®¿¡¼­ Text ÄÄÆ÷³ÍÆ®¸¦ °¡Á®¿È
-        gameText = gameLabel.GetComponent<Text>();
+        //ê²Œì„ ìƒíƒœ UI ì˜¤ë¸Œì íŠ¸ì—ì„œ Text ì»´í¬ë„ŒíŠ¸ ê°€ì ¸ì˜¤ê¸°
+        gameText = gameLabel.GetComponent<TextMeshProUGUI>();
 
-        // »óÅÂ ÅØ½ºÆ®ÀÇ ³»¿ëÀ» ¾Æ·¡¿Í °°ÀÌ ÇÑ´Ù
-        gameText.text = "Ready...";
+        //ê²Œì„ í…ìŠ¤íŠ¸ë¥¼ ì¤€ë¹„ ë¬¸êµ¬ë¡œ ì„¤ì •
+        gameText.text = "ì¤€ë¹„...";
 
-        // »óÅÂ ÅØ½ºÆ®ÀÇ »ö»óÀ» ÁÖÈ²»öÀ¸·Î ¼³Á¤
+        //ê²Œì„ í…ìŠ¤íŠ¸ì˜ ê¸€ì ìƒ‰ìƒì„ ë…¸ë€ìƒ‰ìœ¼ë¡œ ì„¤ì •
         gameText.color = new Color32(255, 185, 0, 255);
 
-        // °ÔÀÓ ÁØºñ --> °ÔÀÓ Áß »óÅÂ·Î ÀüÈ¯
+        //ì¤€ë¹„ ìƒíƒœ --> ê²Œì„ ì¤‘ ìƒíƒœë¡œ ì „í™˜ ì‹œì‘
         StartCoroutine(ReadyToStart());
 
-        //
-        player = GameObject.Find("Player").GetComponent<PlayerMove>(); 
+        player = GameObject.Find("Player").GetComponent<PlayerMove>();
     }
 
     IEnumerator ReadyToStart()
     {
         yield return new WaitForSeconds(2f);
-        gameText.text = "Go!";
-        yield return new WaitForSeconds(0.5f);
+        gameText.text = "ì‹œì‘!";
+        yield return new WaitForSeconds(1f);
         gameLabel.SetActive(false);
         gState = GameState.Run;
     }
 
-    // Update is called once per frame
     void Update()
     {
-        //
         if(player.hp <= 0)
         {
             gameLabel.SetActive(true);
-            gameText.text = "Game Over";
+            gameText.text = "ê²Œì„ ì˜¤ë²„";
             gameText.color = new Color32(255, 0, 0, 255);
             gState = GameState.GameOver;
         }

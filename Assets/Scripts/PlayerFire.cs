@@ -1,90 +1,175 @@
+using System.Collections;
 using UnityEngine;
 
 public class PlayerFire : MonoBehaviour
 {
-    //¹ß»ç À§Ä¡
+    //ë°œì‚¬ ìœ„ì¹˜
     public GameObject firePosition;
 
-    //ÅõÃ´ ¹«±â ¿ÀºêÁ§Æ®
+    //í­íƒ„ í”„ë¦¬íŒ¹ ì˜¤ë¸Œì íŠ¸
     public GameObject bombFactory;
 
-    //ÅõÃ´ ÆÄ¿ö
+    //í­íƒ„ íŒŒì›Œ
     public float throwPower = 15f;
 
-    //ÇÇ°İ ÀÌÆåÆ® ¿ÀºêÁ¦±×
+    //í­íƒ„ ìƒì„± ìœ„ì¹˜ë¥¼ í”Œë ˆì´ì–´ ì•ìœ¼ë¡œ ì–¼ë§ˆë‚˜ ë„ìš¸ì§€ (ì¸ìŠ¤í™í„°ì—ì„œ ì¡°ì ˆ ê°€ëŠ¥)
+    public float throwOffset = 1.5f;
+
+    //ì´ì•Œ ì´í™íŠ¸ ì˜¤ë¸Œì íŠ¸
     public GameObject bulletEffect;
 
-    //ÇÇ°İ ÀÌÆåÆ® ÆÄÆ¼Å¬ ½Ã½ºÅÛ
+    //ì´ì•Œ ì´í™íŠ¸ íŒŒí‹°í´ ì‹œìŠ¤í…œ
     ParticleSystem ps;
 
-    //¹ß»ç ¹«±â °ø°İ·Â
+    //ì´ì•Œ ê³µê²© ê³µê²©ë ¥
     public int weaponPower = 5;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    //ë ˆì´ì € ê³µê²© ê³µê²©ë ¥
+    public int laserPower = 10;
+
+    //ë ˆì´ì € í”¼ê²© ì´í™íŠ¸ ì˜¤ë¸Œì íŠ¸
+    public GameObject laserEffect;
+
+    //ë ˆì´ì € ë¹” ìƒ‰ìƒ (ì¸ìŠ¤í™í„°ì—ì„œ ë°”ê¿€ ìˆ˜ ìˆìŒ)
+    public Color laserColor = new Color(1f, 0.2f, 0.2f);
+
+    //ë ˆì´ì € ë¹” êµµê¸° (ì¸ìŠ¤í™í„°ì—ì„œ ë°”ê¿€ ìˆ˜ ìˆìŒ)
+    public float laserWidth = 0.05f;
+
+    //ë ˆì´ì € ë¹”ì´ í™”ë©´ì— ë³´ì´ëŠ” ì‹œê°„ (ì´ˆ ë‹¨ìœ„, ì¸ìŠ¤í™í„°ì—ì„œ ë°”ê¿€ ìˆ˜ ìˆìŒ)
+    public float laserDuration = 0.1f;
+
+    //ë ˆì´ì € ë¹” ì„ ì„ ê·¸ë¦¬ëŠ” ì»´í¬ë„ŒíŠ¸
+    LineRenderer laserLine;
+
     void Start()
     {
-        //ÇÇ°İ ÀÌÆåÆ® ¿ÀºêÁ§Æ®¿¡¼­ ÆÄÆ¼Å¬ ½Ã½ºÅÛ ÄÄÆ÷³ÍÆ® °¡Á®¿À±â
         ps = bulletEffect.GetComponent<ParticleSystem>();
+
+        //ì´ ì˜¤ë¸Œì íŠ¸ì— LineRenderer ì»´í¬ë„ŒíŠ¸ë¥¼ ì½”ë“œë¡œ ì¶”ê°€
+        laserLine = gameObject.AddComponent<LineRenderer>();
+
+        //ë¹”ì€ ì‹œì‘ì (ì´êµ¬)ê³¼ ëì (í”¼ê²© ìœ„ì¹˜), 2ê°œì˜ ì ìœ¼ë¡œ ì´ë£¨ì–´ì§
+        laserLine.positionCount = 2;
+
+        //ë¹”ì˜ ì‹œì‘ êµµê¸°ì™€ ë êµµê¸° ì„¤ì • (ëìœ¼ë¡œ ê°ˆìˆ˜ë¡ ê°€ëŠ˜ì–´ì§)
+        laserLine.startWidth = laserWidth;
+        laserLine.endWidth = laserWidth * 0.3f;
+
+        //ë¹” ë¨¸í‹°ë¦¬ì–¼ ìƒì„± í›„ HideAndDontSaveë¡œ ì„¤ì •í•´ ë„ë©”ì¸ ë¦¬ë¡œë“œ ì‹œ íŒŒê´´ ë°©ì§€
+        Material laserMat = new Material(Shader.Find("Sprites/Default"));
+        laserMat.hideFlags = HideFlags.HideAndDontSave;
+        laserLine.material = laserMat;
+
+        //ë¹”ì˜ ì‹œì‘ ìƒ‰ìƒ ì„¤ì •
+        laserLine.startColor = laserColor;
+
+        //ë¹”ì˜ ë ìƒ‰ìƒì€ ê°™ì€ ìƒ‰ì´ì§€ë§Œ íˆ¬ëª…í•˜ê²Œ ì„¤ì • (ëìœ¼ë¡œ ê°ˆìˆ˜ë¡ ì‚¬ë¼ì§€ëŠ” íš¨ê³¼)
+        laserLine.endColor = new Color(laserColor.r, laserColor.g, laserColor.b, 0f);
+
+        //ë¹”ì˜ ìœ„ì¹˜ë¥¼ ì›”ë“œ ì¢Œí‘œ ê¸°ì¤€ìœ¼ë¡œ ì„¤ì • (ì˜¤ë¸Œì íŠ¸ ì´ë™ì— ì˜í–¥ë°›ì§€ ì•ŠìŒ)
+        laserLine.useWorldSpace = true;
+
+        //ì²˜ìŒì—ëŠ” ë¹”ì„ ìˆ¨ê²¨ë‘ 
+        laserLine.enabled = false;
     }
 
-    // Update is called once per frame
     void Update()
     {
-        // °ÔÀÓ »óÅÂ°¡ '°ÔÀÓ Áß' »óÅÂÀÏ ¶§¸¸ Á¶ÀÛÇÒ ¼ö ÀÖ°Ô ÇÑ´Ù.
         if (GameManager.gm.gState != GameManager.GameState.Run)
         {
             return;
         }
 
-        //¸¶¿ì½º ¿À¸¥ÂÊ ¹öÆ°À» ´©¸£¸é ½Ã¼±ÀÌ ¹Ù¶óº¸´Â ¹æÇâÀ¸·Î ¼ö·ùÅº ÅõÃ´
-
-        //1.¸¶¿ì½º ¿À¸¥ÂÊ ¹öÆ° ÀÔ·Â ¹Ş±â
         if (Input.GetMouseButtonDown(1))
         {
-            //¼ö·ùÅº ¿ÀºêÁ§Æ®¸¦ »ı¼ºÇÑ ÈÄ ¼ö·ùÅºÀÇ »ı¼º À§Ä¡¸¦ ¹ß»ç À§Ä¡·Î ÇÔ
             GameObject bomb = Instantiate(bombFactory);
-            bomb.transform.position = firePosition.transform.position;
-
-            //¼ö·ùÅº ¿ÀºêÁ§Æ®ÀÇ ¸®Áöµå¹Ùµğ ÄÄÆ÷³ÍÆ® °¡Á®¿È
+            //ì¹´ë©”ë¼ ì• ë°©í–¥ìœ¼ë¡œ throwOffsetë§Œí¼ ë„ìš´ ìœ„ì¹˜ì— ìƒì„±
+            bomb.transform.position = firePosition.transform.position + Camera.main.transform.forward * throwOffset;
             Rigidbody rb = bomb.GetComponent<Rigidbody>();
-
-            //Ä«¸Ş¶óÀÇ Á¤¸é ¹æÇâÀ¸·Î ¼ö·ùÅº¿¡ ¹°¸®ÀûÀÎ ÈûÀ» °¡ÇÔ
             rb.AddForce(Camera.main.transform.forward * throwPower, ForceMode.Impulse);
-
         }
 
-        //¸¶¿ì½º ¿ŞÂÊ ¹öÆ°À» ´©¸£¸é ½Ã¼±ÀÌ ¹Ù¶óº¸´Â ¹æÇâÀ¸·Î ÃÑÀ» ¹ß»ç
-        //¸¶¿ì½º ¿ŞÂÊ ¹öÆ° ÀÔ·Â
         if (Input.GetMouseButtonDown(0))
         {
-            //·¹ÀÌ¸¦ »ı¼ºÇÑ ÈÄ ¹ß»çµÉ À§Ä¡¿Í ÁøÇà ¹æÇâÀ» ¼³Á¤
             Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
-
-            //·¹ÀÌ°¡ ºÎµúÈù ´ë»óÀÇ Á¤º¸¸¦ ÀúÀåÇÒ º¯¼ö »ı¼º
             RaycastHit hitInfo = new RaycastHit();
 
-            //·¹ÀÌ¸¦ ¹ß»çÇÑ ÈÄ ¸¸ÀÏ ºÎµúÈù ¹°Ã¼°¡ ÀÖÀ¸¸é ÇÇ°İ ÀÌÆåÆ® Ç¥½Ã
-            if(Physics.Raycast(ray, out hitInfo))
+            if (Physics.Raycast(ray, out hitInfo))
             {
-                //¸¸ÀÏ ·¹ÀÌ¿¡ ºÎµúÈù ´ë»óÀÇ ·¹ÀÌ¾î°¡ 'Enemy'¶ó¸é µ¥¹ÌÁö ÇÔ¼ö ½ÇÇà
                 if (hitInfo.transform.gameObject.layer == LayerMask.NameToLayer("Enemy"))
                 {
                     EnemyFSM eFSM = hitInfo.transform.GetComponent<EnemyFSM>();
                     eFSM.HitEnemy(weaponPower);
+                    DamageCount.instance.AddDamage(weaponPower);
                 }
-                //±×·¸Áö ¾Ê´Ù¸é, ·¹ÀÌ¿¡ ºÎµúÈù ÁöÁ¡¿¡ ÇÇ°İ ÀÌÆåÆ® ÇÃ·¹ÀÌ
                 else
                 {
-                    //ÇÇ°İ ÀÌÆåÆ®ÀÇ À§Ä¡¸¦ ·¹ÀÌ°¡ ºÎµúÈù ÁöÁ¡À¸·Î ÀÌµ¿
                     bulletEffect.transform.position = hitInfo.point;
-
-                    //ÇÇ°İ ÀÌÆåÆ®ÀÇ forward ¹æÇâÀ» ·¹ÀÌ°¡ ºÎµúÈù ÁöÁ¡ÀÇ ¹ı¼± º¤ÅÍ¿Í ÀÏÄ¡
                     bulletEffect.transform.forward = hitInfo.normal;
-
-                    //ÇÇ°İ ÀÌÆåÆ® ÇÃ·¹ÀÌ
                     ps.Play();
                 }
             }
         }
+
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            print("ë ˆì´ì € ë°œì‚¬!");
+
+            Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
+            RaycastHit hitInfo = new RaycastHit();
+
+            //ë¹”ì˜ ì‹œì‘ì ì€ ì´êµ¬(ë°œì‚¬ ìœ„ì¹˜)
+            Vector3 startPoint = firePosition.transform.position;
+            Vector3 endPoint;
+
+            if (Physics.Raycast(ray, out hitInfo))
+            {
+                //ë ˆì´ê°€ ë­”ê°€ì— ë§ìœ¼ë©´ ëì ì„ í”¼ê²© ìœ„ì¹˜ë¡œ ì„¤ì •
+                endPoint = hitInfo.point;
+
+                if (hitInfo.transform.gameObject.layer == LayerMask.NameToLayer("Enemy"))
+                {
+                    EnemyFSM eFSM = hitInfo.transform.GetComponent<EnemyFSM>();
+                    eFSM.HitEnemy(laserPower);
+                    DamageCount.instance.AddDamage(laserPower);
+                }
+
+                //í”¼ê²© ìœ„ì¹˜ì— ì´í™íŠ¸ í”„ë¦¬íŒ¹ì„ ìƒì„±í•˜ê³ , 2ì´ˆ í›„ ìë™ ì‚­ì œ
+                GameObject effect = Instantiate(laserEffect, hitInfo.point, Quaternion.LookRotation(hitInfo.normal));
+                Destroy(effect, 2f);
+            }
+            else
+            {
+                //ì•„ë¬´ê²ƒë„ ì•ˆ ë§ìœ¼ë©´ ëì ì„ ì¹´ë©”ë¼ ì •ë©´ 100m ì•ìœ¼ë¡œ ì„¤ì •
+                endPoint = Camera.main.transform.position + Camera.main.transform.forward * 100f;
+            }
+
+            //ì½”ë£¨í‹´ìœ¼ë¡œ ë¹”ì„ ì ê¹ ì¼°ë‹¤ê°€ ë”
+            StartCoroutine(ShowLaserBeam(startPoint, endPoint));
+        }
+    }
+
+    void OnDestroy()
+    {
+        //ëŸ°íƒ€ì„ì— ìƒì„±í•œ ë¨¸í‹°ë¦¬ì–¼ì„ ì§ì ‘ í•´ì œí•´ ë©”ëª¨ë¦¬ ëˆ„ìˆ˜ ë°©ì§€
+        if (laserLine != null && laserLine.material != null)
+            Destroy(laserLine.material);
+    }
+
+    IEnumerator ShowLaserBeam(Vector3 start, Vector3 end)
+    {
+        //ë¹”ì˜ ì‹œì‘ì ê³¼ ëì  ìœ„ì¹˜ë¥¼ ì„¤ì •
+        laserLine.SetPosition(0, start);
+        laserLine.SetPosition(1, end);
+
+        //ë¹”ì„ í™”ë©´ì— í‘œì‹œ
+        laserLine.enabled = true;
+
+        //laserDurationì´ˆ ë™ì•ˆ ê¸°ë‹¤ë¦¼
+        yield return new WaitForSeconds(laserDuration);
+
+        //ë¹”ì„ ë‹¤ì‹œ ìˆ¨ê¹€
+        laserLine.enabled = false;
     }
 }
