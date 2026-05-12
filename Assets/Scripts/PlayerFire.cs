@@ -42,9 +42,13 @@ public class PlayerFire : MonoBehaviour
     //레이저 빔 선을 그리는 컴포넌트
     LineRenderer laserLine;
 
+    Animator anim;
+
     void Start()
     {
         ps = bulletEffect.GetComponent<ParticleSystem>();
+
+        anim = GetComponentInChildren<Animator>();
 
         //이 오브젝트에 LineRenderer 컴포넌트를 코드로 추가
         laserLine = gameObject.AddComponent<LineRenderer>();
@@ -92,6 +96,9 @@ public class PlayerFire : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
+            if(anim.GetFloat("MoveMotion") == 0)
+                anim
+
             Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
             RaycastHit hitInfo = new RaycastHit();
 
