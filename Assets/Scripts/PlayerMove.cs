@@ -33,9 +33,12 @@ public class PlayerMove : MonoBehaviour
     //Hit 효과 오브젝트 
     public GameObject hitEffect;
 
+    Animator anim;
+
     private void Start()
     {
         cc = GetComponent<CharacterController>();
+        anim = GetComponentInChildren<Animator>();
     }
 
     // Update is called once per frame
@@ -57,6 +60,9 @@ public class PlayerMove : MonoBehaviour
         //2. 이동 방향 설정
         Vector3 dir = new Vector3(h, 0, v);
         dir = dir.normalized;
+
+        //방향키를 누르면 무브모션으로 간다
+        anim.SetFloat("MoveMotion", dir.magnitude);
 
         //2-1. 메인 카메라를 기준으로 방향 변환
         dir = Camera.main.transform.TransformDirection(dir);
