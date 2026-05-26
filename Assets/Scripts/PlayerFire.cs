@@ -44,6 +44,17 @@ public class PlayerFire : MonoBehaviour
 
     Animator anim;
 
+    //무기 모드 변수
+    enum WeaponMode
+    {
+        Normal,
+        Sniper
+    }
+    WeaponMode wMode;
+
+    //카메라 확대 확인용 변수
+    bool ZoomMode = false;
+
     void Start()
     {
         ps = bulletEffect.GetComponent<ParticleSystem>();
@@ -76,6 +87,9 @@ public class PlayerFire : MonoBehaviour
 
         //처음에는 빔을 숨겨둠
         laserLine.enabled = false;
+
+        //무기 기본 모드를 노멀 모드로 설정한다
+        wMode = WeaponMode.Normal;
     }
 
     void Update()
@@ -85,19 +99,53 @@ public class PlayerFire : MonoBehaviour
             return;
         }
 
+        //노멀 모드: 마우스 오른쪽 버튼을 누르면 시선 방향으로 수류탄 투척
+        //스나이퍼 모드: 마우스 오른쪽 버튼을 누르면 화면을 확대
+
+        //마우스 오른쪽 버튼 입력을 받는다
         if (Input.GetMouseButtonDown(1))
         {
-            GameObject bomb = Instantiate(bombFactory);
-            //카메라 앞 방향으로 throwOffset만큼 띄운 위치에 생성
-            bomb.transform.position = firePosition.transform.position + Camera.main.transform.forward * throwOffset;
-            Rigidbody rb = bomb.GetComponent<Rigidbody>();
-            rb.AddForce(Camera.main.transform.forward * throwPower, ForceMode.Impulse);
+            switch (wMode)
+            {
+                case WeaponMode.Normal:
+                    //수류탄 오브젝트를 생성하고, 수류탄의 생성 위치를 발사 위치로 한다
+                    GameObject bomb = Instantiate(bombFactory);
+                    bomb.transform.position = firePosition.transform.position;
+
+                    //수류탄 오브젝트의 리지드보디 컴포넌트를 가져온다
+                    Rigidbody rb = bomb.GetComponent<Rigidbody>();
+
+                    //카메라의 정면 방향으로 수류탄에 물리적인 힘을 가한다
+                    rb.AddForce(Camera.main.transform.forward * throwPower, ForceMode.Impulse);
+
+                    break;
+                    case WeaponMode.Sniper:
+                    //만일, 줌 모드 상태가 아니라면 카메라를 확대하고 줌 모드 상태로 변경한다
+                    if (!ZoomMode)
+                    {
+                        Camera.main.fieldOfView = 15f;
+                        ZoomMode = true;
+                    }
+                    //그렇지 않으면 카메라를 원래 상태로 되돌리고 줌 모드 상태를 해제한다
+                    else
+                    {
+                        Camera.main.fieldOfView = 60f;
+                        ZoomMode = false;
+                    }
+                        break;
+            }
         }
 
         if (Input.GetMouseButtonDown(0))
         {
             if(anim.GetFloat("MoveMotion") == 0)
-                anim
+            {
+                //만일 이동 블렌드 트리 파라미터의 값이 0이라면, 공격 애니메이션을 실시
+                if (anim.GetFloat("MoveMotion") == 0)
+                {
+                    anim.SetTrigger("Attack");
+                }
+            }
 
             Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
             RaycastHit hitInfo = new RaycastHit();
@@ -154,6 +202,20 @@ public class PlayerFire : MonoBehaviour
 
             //코루틴으로 빔을 잠깐 켰다가 끔
             StartCoroutine(ShowLaserBeam(startPoint, endPoint));
+        }
+
+        //만일 키보드의 숫자 1번 입력을 받으면, 무기 모드를 일반 모드로 변경
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            wMode = WeaponMode.Normal;
+
+            //카메라의 화면을 다시 원래대로 돌려준다
+            Camera.main.fieldOfView = 60f;
+        }
+        //만일 키보드의 숫자 2번 입력을 받으면, 무기 모드를 스나이퍼 모드로 변경
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            wMode = WeaponMode.Sniper;
         }
     }
 
